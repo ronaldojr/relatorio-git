@@ -1,11 +1,8 @@
-const express = require('express');
-const app = express();
+const app = require('./app');
 const gitlog = require('gitlog');
 const bodyParser = require('body-parser');
 const Excel = require('exceljs');
-const dateFormat  = require('dateformat');
 const banco = require('./banco.js');
-const config = require('./config.js')
 
 var fields = [ 
       'hash'
@@ -26,9 +23,7 @@ app.use("*",  (req, res, next) => {
     next();
 });
 
-var router = express.Router();
-
-router.post('/get', (req, res) => {
+app.post('/get', (req, res) => {
   if (req.body.tipo == 0) {
     var repositorio = { repo: req.body.endereco
     , fields 
@@ -58,7 +53,7 @@ router.post('/get', (req, res) => {
   }
 });
 
-router.post('/pesquisar', (req, res) => {
+app.post('/pesquisar', (req, res) => {
   var pk = req.body.pk;
   var inicio = req.body.inicio;
   var fim = req.body.fim;
@@ -88,7 +83,7 @@ function getRepositorio(endereco, inicio, fim, res){
     
 }
  
-router.get('/repositorios', (req, res) => {
+app.get('/repositorios', (req, res) => {
   var query_repositorios = "SELECT pk, nome, endereco FROM repositorios";
   var connection = banco.conectar();
   connection.query(query_repositorios, function(err, repositorios, fields) {
@@ -100,7 +95,7 @@ router.get('/repositorios', (req, res) => {
 });
 
 
-router.post('/nomeRepositorio', (req, res) => {
+app.post('/nomeRepositorio', (req, res) => {
   var connection = banco.conectar();
   var query_nome_repositorio = "SELECT nome,endereco FROM repositorios where pk =";
   query_nome_repositorio += req.body.pk;
@@ -112,7 +107,7 @@ router.post('/nomeRepositorio', (req, res) => {
   });
 });
 
-router.post('/planilha', (req, res) => {
+app.post('/planilha', (req, res) => {
 
   var workbook = new Excel.Workbook();
   var worksheet = workbook.addWorksheet('Repositorios');
@@ -216,9 +211,4 @@ function gravarPlanilha(worksheet, workbook, res) {
   });
 }
 
-app.use('/', router);
-
-app.listen(3000, function() {
-	var date = dateFormat(new Date(), "dd-mm-yyyy HH:MM:ss");
-    console.log('[' + date + '] - ' + 'Servidor relatorio-git online na porta 3000');
-});
+//app.use('/', app);

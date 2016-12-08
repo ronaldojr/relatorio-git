@@ -4,7 +4,7 @@
   "description": "Servidor de consulta de relatrórios sobre logs de repositórios GIT",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "",
   "license": "BSD-2-Clause",
@@ -16,5 +16,10 @@
     "gitlog": "^2.1.2",
     "lodash": "~4.13.1",
     "mysql": "^2.11.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "supertest": "^2.0.1"
   }
 }
