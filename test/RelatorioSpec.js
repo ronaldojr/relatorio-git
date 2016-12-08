@@ -1,6 +1,4 @@
-require('../relatorio-git')
-var banco = require('../banco')
-var app = require('../app')
+var app = require('../app') // use consign to inject dependencies!
 var client = require('supertest')(app)
 var expect = require('chai').expect
 
@@ -11,7 +9,7 @@ describe('Relatorio', () => {
 			endereco: 'https://github.com/RobHawk90/minhas-financas-java-rest-api.git'
 		}
 
-		let connection = banco.conectar()
+		let connection = app.banco.conectar()
 
 		connection.query('INSERT INTO repositorios SET ?', repo, (exception, result) => {
 			if(exception) console.log(exception)
@@ -52,8 +50,36 @@ describe('Relatorio', () => {
 		client.post('/repositorios').send({}).expect(400, done)
 	})
 
+	it('should validate repos name', done => {
+		client.post('/repositorios')
+			.send({
+				nome: '',
+				endereco: '/repo/foo-bar'
+			})
+			.end((err, res) => {
+				let validation = res.body[0]
+
+				expect(res.status).to.equal(400)
+				expect(validation.msg).to.equal('O campo nome não pode ser vazio.')
+			})
+	})
+
+	it('should validate repos address', done => {
+		client.post('/repositorios')
+			.send({
+				nome: 'foo-bar',
+				endereco: ''
+			})
+			.end((err, res) => {
+				let validation = res.body[0]
+
+				expect(res.status).to.equal(400)
+				expect(validation.msg).to.equal('O campo endereço não pode ser vazio.')
+			})
+	})
+
 	after(done => {
-		let connection = banco.conectar()
+		let connection = app.banco.conectar()
 
 		connection.query('TRUNCATE repositorios', (exception, result) => {
 			if(exception) console.log(exception)
