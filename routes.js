@@ -1,10 +1,9 @@
-const app = require('./app');
 const gitlog = require('gitlog');
-
 const Excel = require('exceljs');
-const banco = require('./banco.js');
 
-var fields = [ 
+module.exports = app => {
+  
+   var fields = [ 
       'hash'
       , 'abbrevHash'
       , 'subject'
@@ -14,82 +13,67 @@ var fields = [
       ] 
 
 
- //lista todos os repositórios'
-app.get('/repositorios', (req, res) => {
-  var query_repositorios = "SELECT pk, nome, endereco FROM repositorios";
-  var connection = banco.conectar();
-  connection.query(query_repositorios, function(err, repositorios, fields) {
-      if (err) console.log(err);
-      res.json(repositorios);
-      connection.destroy();
-  });
-});
-
-//cadastra um repositorio no banco (nome, endereço')
-app.post('/repositorios', (req, res) => {
-  req.checkBody('nome','O campo nome não pode ser vazio.').notEmpty()
-  req.checkBody('endereco','O campo endereço não pode ser vazio.').notEmpty()
-  var error = req.validationErrors()
-  if (error) {
-    res.status(400).send(error)
-    return;
-  }
-  var connection = banco.conectar();
-  var query_insert_repositorios = "INSERT INTO repositorios (nome, endereco) values (?,?)";  
-  connection.query(query_insert_repositorios, [req.body.nome, req.body.endereco], (exception, result) => {
-    if(exception) console.log(exception)
-    res.status(201).json({'pk': result.insertId})
-    connection.destroy()
+//deve retornar lista de commits de um repositório específico
+app.get('/repositorios/:pk/commits', (req, res) => {
+  req.checkParams('pk', 'Parâmetro pk obrigatório').notEmpty()
+  error = req.validationErrors()
+  if (error) { res.status(404).send(error); return }
+  var dados = getDadosRepoFromPk(req.params.pk, dados => {
+    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
+    var repositorio = { repo: dados[0]['endereco'] 
+        , fields 
+      }
+    gitlog(repositorio, (error, commits) => {
+      if (error) console.log(error)
+      res.json(commits)
+    });
   })
-
 });
+
+//deve retornar um commit específico de um repositório específico
+app.get('/repositorios/:pk/commit/:hash', (req, res) => {
+  req.checkParams('pk', 'Parâmetro pk é obrigatório').notEmpty()
+  req.checkParams('hash', 'Parâmetro hash é obrigatório').notEmpty()
+  error = req.validationErrors()
+  if (error) { res.status(400).send(error); return }
+  var dados = getDadosRepoFromPk(req.params.pk, dados => {
+    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
+    var repositorio = { repo: dados[0]['endereco']
+      , fields 
+    }
+    gitlog(repositorio, (error, commits) => {
+      if (error) console.log(error)
+      var dados_commit = false
+      commits.forEach(commit => {
+        dados_commit = (commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) ? commit : false 
+      })
+      if (dados_commit) {
+        res.json(dados_commit)
+      } else {
+        res.status(404).send({msg: 'Hash não encontrada'}).end()
+      }
+      
+    })
+  })
+})
 
 function getDadosRepoFromPk(pk, callback) {
-  var connection = banco.conectar()
+  var connection = app.banco.conectar()
   var query_endereco_repositorio = "SELECT nome, endereco FROM repositorios WHERE pk=?"
   connection.query(query_endereco_repositorio, [pk],function(err, dados, fields) {
-      if (err) res.status(400).send(error)
+      if (err) console.log(error)
       connection.destroy()
       callback(dados)
-  })
+  });
 }
 
-app.post('/get', (req, res) => {
-  if (req.body.tipo == 0) {
-    var repositorio = { repo: req.body.endereco
-    , fields 
-    }
-    gitlog(repositorio, (error, commits) => {
-      if (error) console.log(error);
-      res.json(commits);
-      res.end();
-    });
-  } 
-
-  if (req.body.tipo == 1) {
-    var commit;
-    var hash = req.body.hash;
-    var repositorio = { repo: req.body.endereco
-      , fields
-    }
-    gitlog(repositorio, (error, commits) => {
-      if (error) console.log(error);
-      for (var i in commits) {
-        if (commits[i].hash == hash || commits[i].abbrevHash == hash) {
-          res.json(commits[i]);
-          res.end();
-        }
-      } 
-    }); 
-  }
-});
-
+//repositorios/:pk/periodo/:inicio/:fim
 app.post('/pesquisar', (req, res) => {
   var pk = req.body.pk;
   var inicio = req.body.inicio;
   var fim = req.body.fim;
   var query_endereco_repositorio = "SELECT nome, endereco FROM repositorios WHERE pk="+pk;
-  var connection = banco.conectar();
+  var connection = app.banco.conectar();
 
   if (pk !== "0") {
     connection.query(query_endereco_repositorio, function(err, repo, fields) {
@@ -114,30 +98,58 @@ function getRepositorio(endereco, inicio, fim, res){
     
 }
  
+ //lista todos os repositórios'
 app.get('/repositorios', (req, res) => {
   var query_repositorios = "SELECT pk, nome, endereco FROM repositorios";
-  var connection = banco.conectar();
+  var connection = app.banco.conectar();
   connection.query(query_repositorios, function(err, repositorios, fields) {
       if (err) console.log(err);
       res.json(repositorios);
-      res.end();
       connection.destroy();
   });
 });
 
+//cadastra um repositorio no banco (nome, endereço')
+app.post('/repositorios', (req, res) => {
+  req.checkBody('nome','O campo nome não pode ser vazio.').notEmpty()
+  req.checkBody('endereco','O campo endereço não pode ser vazio.').notEmpty()
+  var error = req.validationErrors();
+  if (error) {
+    res.status(400).send(error);
+    return;
+  }
+  var connection = app.banco.conectar();
+  var query_insert_repositorios = "INSERT INTO repositorios (nome, endereco) values (?,?)";  
+  connection.query(query_insert_repositorios, [req.body.nome, req.body.endereco], (exception, result) => {
+    if(exception) console.log(exception)
+    res.status(201).json({'pk': result.insertId});
+    connection.destroy();
+  })
 
+});
+
+//deve ser get, listar dados de um repositório específico
+//repositorios/:pk
 app.post('/nomeRepositorio', (req, res) => {
-  var connection = banco.conectar();
-  var query_nome_repositorio = "SELECT nome,endereco FROM repositorios where pk =";
-  query_nome_repositorio += req.body.pk;
-  connection.query(query_nome_repositorio, function(err, dados, fields){
+  req.checkBody('pk','O campo pk não pode ser vazio.').notEmpty()
+  var error = req.validationErrors();
+  if (error) {
+    res.status(400).send(error);
+    return;
+  }
+  var connection = app.banco.conectar();
+  var query_nome_repositorio = "SELECT nome,endereco FROM repositorios where pk = ?";
+  connection.query(query_nome_repositorio, [req.body.pk] ,function(err, dados, fields){
       if (err) console.log(err);
       res.json(dados);
-      res.end();
       connection.destroy();
   });
 });
 
+
+//gera relatório excel de um repositório
+//repositorios/:pk/periodo/:inicio/:fim/planilha
+//repositorios/periodo/:inicio/:fim/planilha
 app.post('/planilha', (req, res) => {
 
   var workbook = new Excel.Workbook();
@@ -167,9 +179,9 @@ app.post('/planilha', (req, res) => {
 
 
 function getDadosRepositorio(pk, inicio, fim, workbook, worksheet, res) {
-  var connection = banco.conectar();
-  var query_nome_repositorio = "SELECT nome,endereco FROM repositorios where pk ="+pk;
-  connection.query(query_nome_repositorio, function(err, data, fields){
+  var connection = app.banco.conectar();
+  var query_nome_repositorio = "SELECT nome,endereco FROM repositorios where pk=?";
+  connection.query(query_nome_repositorio, [pk],function(err, data, fields){
       if (err) console.log(err);
       commitsEntreDatas(data[0], inicio, fim, worksheet);
       setTimeout(function() {
@@ -180,7 +192,7 @@ function getDadosRepositorio(pk, inicio, fim, workbook, worksheet, res) {
 }
 
 function getDadosAllRepositorios(inicio, fim, workbook, worksheet, res) {
-   var connection = banco.conectar();
+   var connection = app.banco.conectar();
   var query_nome_repositorio = "SELECT nome,endereco FROM repositorios";
   connection.query(query_nome_repositorio, function(err, data, fields){
     if (err) console.log(err);
@@ -241,3 +253,5 @@ function gravarPlanilha(worksheet, workbook, res) {
       res.json({planilha: "ok"})
   });
 }
+}
+

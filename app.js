@@ -2,6 +2,7 @@ let express = require('express');
 let app = express();
 const bodyParser = require('body-parser');
 const expressValidator = require('express-validator');
+const consign = require('consign');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -14,5 +15,9 @@ app.use("*",  (req, res, next) => {
     next();
 });
 
+consign()
+    .include('banco.js')
+    .then('routes.js')
+    .into(app)
 
 module.exports = app;

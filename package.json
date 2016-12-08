@@ -10,6 +10,7 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "body-parser": "^1.15.1",
+    "consign": "^0.1.2",
     "dateformat": "^1.0.12",
     "exceljs": "^0.2.24",
     "express": "~4.13.4",
