@@ -1,6 +1,6 @@
 const app = require('./app');
 const gitlog = require('gitlog');
-const bodyParser = require('body-parser');
+
 const Excel = require('exceljs');
 const banco = require('./banco.js');
 
@@ -13,15 +13,46 @@ var fields = [
       , 'body'
       ] 
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
-app.use("*",  (req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    next();
+ //lista todos os repositórios'
+app.get('/repositorios', (req, res) => {
+  var query_repositorios = "SELECT pk, nome, endereco FROM repositorios";
+  var connection = banco.conectar();
+  connection.query(query_repositorios, function(err, repositorios, fields) {
+      if (err) console.log(err);
+      res.json(repositorios);
+      connection.destroy();
+  });
 });
+
+//cadastra um repositorio no banco (nome, endereço')
+app.post('/repositorios', (req, res) => {
+  req.checkBody('nome','O campo nome não pode ser vazio.').notEmpty()
+  req.checkBody('endereco','O campo endereço não pode ser vazio.').notEmpty()
+  var error = req.validationErrors()
+  if (error) {
+    res.status(400).send(error)
+    return;
+  }
+  var connection = banco.conectar();
+  var query_insert_repositorios = "INSERT INTO repositorios (nome, endereco) values (?,?)";  
+  connection.query(query_insert_repositorios, [req.body.nome, req.body.endereco], (exception, result) => {
+    if(exception) console.log(exception)
+    res.status(201).json({'pk': result.insertId})
+    connection.destroy()
+  })
+
+});
+
+function getDadosRepoFromPk(pk, callback) {
+  var connection = banco.conectar()
+  var query_endereco_repositorio = "SELECT nome, endereco FROM repositorios WHERE pk=?"
+  connection.query(query_endereco_repositorio, [pk],function(err, dados, fields) {
+      if (err) res.status(400).send(error)
+      connection.destroy()
+      callback(dados)
+  })
+}
 
 app.post('/get', (req, res) => {
   if (req.body.tipo == 0) {
@@ -210,5 +241,3 @@ function gravarPlanilha(worksheet, workbook, res) {
       res.json({planilha: "ok"})
   });
 }
-
-//app.use('/', app);
