@@ -3,8 +3,9 @@ const Excel = require('exceljs');
 
 module.exports = app => {
   
+
    var fields = [ 
-      'hash'
+      'hash' 
       , 'abbrevHash'
       , 'subject'
       , 'authorName'
@@ -16,47 +17,44 @@ module.exports = app => {
 
 app.get('/repositorios/:pk/commits', (req, res) => {
 
-    req.checkParams('pk', 'Parâmetro pk obrigatório').notEmpty()
-    error = req.validationErrors()
+  msg = {msg: 'Repo location does not exist'}
+  req.checkParams('pk', 'Parâmetro pk obrigatório').notEmpty()
+  error = req.validationErrors()
 
-    if (error) { res.status(404).send(error); return }
+  if (error) { res.status(404).send(error); return }
 
-    getDadosRepoFromPk(req.params.pk)
-        .then(dados => {
-            if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
-            var repositorio = { repo: dados[0]['endereco'], fields }
-            getCommits(repositorio)
-                .then( commits => res.json(commits) )
-                .catch( err => res.status(404).send({msg: 'Repo location does not exist'}) )
-        }).catch( err => console.log(err) ) 
+  getDadosRepoFromPk(req.params.pk).then(dados => {
+    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontradogo'}); return}
+    var repositorio = { number: 1000,repo: dados[0]['endereco'], fields }
+    getCommits(repositorio).then(commits => res.json(commits))
+      .catch(err => res.status(404).send({msg: 'Repo location does not exist'}))
+  }).catch( err => console.log(err) ) 
 })
 
 
 
 app.get('/repositorios/:pk/commit/:hash', (req, res) => {
 
-    req.checkParams('pk', 'Parâmetro pk é obrigatório').notEmpty()
-    req.checkParams('hash', 'Parâmetro hash é obrigatório').notEmpty()
-    error = req.validationErrors()
+  req.checkParams('pk', 'Parâmetro pk é obrigatório').notEmpty()
+  req.checkParams('hash', 'Parâmetro hash é obrigatório').notEmpty()
+  error = req.validationErrors()
 
-    if (error) { res.status(400).send(error); return }
-    
-    getDadosRepoFromPk(req.params.pk)
-      .then(dados => {
-        if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
-          var repositorio = { repo: dados[0]['endereco'], fields }
-          getCommits(repositorio)
-              .then( commits => {
-                  var hashNotFound = true
-                  commits.forEach(commit => {
-                      if ( ( commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) && hashNotFound == true) {
-                          hashNotFound = false
-                          res.json(commit)
-                      } 
-                  })
-                  if (hashNotFound) res.status(404).send({msg: 'Hash não encontrada'}).end()
-              }).catch( err => console.log(err) )
-      }).catch( err => console.log(err) )
+  if (error) { res.status(400).send(error); return }
+  
+  getDadosRepoFromPk(req.params.pk).then( dados => {
+    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
+      var repositorio = { number: 1000, repo: dados[0]['endereco'], fields }
+      getCommits(repositorio).then( commits => {
+        var hashNotFound = true
+        commits.forEach(commit => {
+          if ( ( commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) && hashNotFound == true) {
+              hashNotFound = false
+              res.json(commit)
+          } 
+        })
+        if (hashNotFound) res.status(404).send({msg: 'Hash não encontrada'}).end()
+      }).catch( err => res.status(404).send({msg: 'Repo location does not exist'}) )
+  }).catch( err => console.log(err) )
 })
 
 
@@ -68,6 +66,7 @@ function getCommits(repositorio) {
     });
   })
 }
+
 
 function getDadosRepoFromPk(pk) {
   var connection = app.banco.conectar()
