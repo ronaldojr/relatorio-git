@@ -13,58 +13,72 @@ module.exports = app => {
       ] 
 
 
-//deve retornar lista de commits de um repositório específico
-app.get('/repositorios/:pk/commits', (req, res) => {
-  req.checkParams('pk', 'Parâmetro pk obrigatório').notEmpty()
-  error = req.validationErrors()
-  if (error) { res.status(404).send(error); return }
-  var dados = getDadosRepoFromPk(req.params.pk, dados => {
-    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
-    var repositorio = { repo: dados[0]['endereco'] 
-        , fields 
-      }
-    gitlog(repositorio, (error, commits) => {
-      if (error) console.log(error)
-      res.json(commits)
-    });
-  })
-});
 
-//deve retornar um commit específico de um repositório específico
-app.get('/repositorios/:pk/commit/:hash', (req, res) => {
-  req.checkParams('pk', 'Parâmetro pk é obrigatório').notEmpty()
-  req.checkParams('hash', 'Parâmetro hash é obrigatório').notEmpty()
-  error = req.validationErrors()
-  if (error) { res.status(400).send(error); return }
-  var dados = getDadosRepoFromPk(req.params.pk, dados => {
-    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
-    var repositorio = { repo: dados[0]['endereco']
-      , fields 
-    }
-    gitlog(repositorio, (error, commits) => {
-      if (error) console.log(error)
-      var dados_commit = false
-      commits.forEach(commit => {
-        dados_commit = (commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) ? commit : false 
-      })
-      if (dados_commit) {
-        res.json(dados_commit)
-      } else {
-        res.status(404).send({msg: 'Hash não encontrada'}).end()
-      }
-      
-    })
-  })
+app.get('/repositorios/:pk/commits', (req, res) => {
+
+    req.checkParams('pk', 'Parâmetro pk obrigatório').notEmpty()
+    error = req.validationErrors()
+
+    if (error) { res.status(404).send(error); return }
+
+    getDadosRepoFromPk(req.params.pk)
+        .then(dados => {
+            if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
+            var repositorio = { repo: dados[0]['endereco'], fields }
+            getCommits(repositorio)
+                .then( commits => res.json(commits) )
+                .catch( err => res.status(404).send({msg: 'Repo location does not exist'}) )
+        }).catch( err => console.log(err) ) 
 })
 
-function getDadosRepoFromPk(pk, callback) {
+
+
+app.get('/repositorios/:pk/commit/:hash', (req, res) => {
+
+    req.checkParams('pk', 'Parâmetro pk é obrigatório').notEmpty()
+    req.checkParams('hash', 'Parâmetro hash é obrigatório').notEmpty()
+    error = req.validationErrors()
+
+    if (error) { res.status(400).send(error); return }
+    
+    getDadosRepoFromPk(req.params.pk)
+      .then(dados => {
+        if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return }
+          var repositorio = { repo: dados[0]['endereco'], fields }
+          getCommits(repositorio)
+              .then( commits => {
+                  var hashNotFound = true
+                  commits.forEach(commit => {
+                      if ( ( commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) && hashNotFound == true) {
+                          hashNotFound = false
+                          res.json(commit)
+                      } 
+                  })
+                  if (hashNotFound) res.status(404).send({msg: 'Hash não encontrada'}).end()
+              }).catch( err => console.log(err) )
+      }).catch( err => console.log(err) )
+})
+
+
+function getCommits(repositorio) {
+  return new Promise( (fulfill, reject) => {
+    gitlog(repositorio, (error, commits) => {
+      if (error) reject(error)
+      else fulfill(commits)
+    });
+  })
+}
+
+function getDadosRepoFromPk(pk) {
   var connection = app.banco.conectar()
   var query_endereco_repositorio = "SELECT nome, endereco FROM repositorios WHERE pk=?"
-  connection.query(query_endereco_repositorio, [pk],function(err, dados, fields) {
-      if (err) console.log(error)
+  return new Promise((fulfill, reject)=>{
+    connection.query(query_endereco_repositorio, [pk],function(err, dados, fields) {
+      if (err) reject(err)
       connection.destroy()
-      callback(dados)
-  });
+      fulfill(dados)
+    });
+  })
 }
 
 //repositorios/:pk/periodo/:inicio/:fim

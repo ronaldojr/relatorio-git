@@ -6,17 +6,22 @@ var dirname = process.cwd()
 
 describe('Relatorio', () => {
 	before(done => { // need to be refactored to DAO pattern!
-		let repo = {
-			nome: 'relatorio-git',
-			endereco: dirname
-		}
+		let repos = [
+			{ nome: 'relatorio-git', endereco: dirname },
+			{ nome: 'fake-git', endereco: 'fake-error' }
+		]
 
 		let connection = app.banco.conectar()
 
-		connection.query('INSERT INTO repositorios SET ?', repo, (exception, result) => {
-			if(exception) console.log(exception)
-			done()
+		repos.forEach( repo => {
+			connection.query('INSERT INTO repositorios SET ?', repo, (exception, result) => {
+				if(exception) console.log(exception)
+				
+			})
 		})
+
+		done()
+		
 	})
 
 
@@ -31,9 +36,19 @@ describe('Relatorio', () => {
 			})
 	})
 	
+	it('GET commits list from repo with out folder', done => {
+		client.get('/repositorios/2/commits')
+			.end((err, res) => {
+				let repositorio = res.body
+				expect(repositorio.msg).to.contains('Repo location does not exist')
+				expect(res.status).to.equal(404)
+				done(err)
+			})
+	})
+	
 
 	it('GET commits list from invalid repo', done => {
-		client.get('/repositorios/2/commits')
+		client.get('/repositorios/3/commits')
 			.end((err, res) => {
 				expect(res.status).to.equal(404)
 				expect(res.body.msg).to.equal('Repositório não encontrado')
@@ -52,7 +67,7 @@ describe('Relatorio', () => {
 	})
 
 	it('GET commits list from invalid repo with invalid hash', done => {
-		client.get('/repositorios/2/commit/1234')
+		client.get('/repositorios/3/commit/1234')
 			.end((err, res) => {
 				expect(res.status).to.equal(404)
 				expect(res.body.msg).to.equal('Repositório não encontrado')
@@ -74,7 +89,7 @@ describe('Relatorio', () => {
 			.end((err, res) => {
 				let repositorios = res.body
 
-				expect(repositorios.length).to.equal(1)
+				expect(repositorios.length).to.equal(2)
 				expect(repositorios[0].nome).to.contains('relatorio-git')
 				expect(res.status).to.equal(200)
 
