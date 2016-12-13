@@ -24,7 +24,7 @@ app.get('/repositorios/:pk/commits', (req, res) => {
   if (error) { res.status(404).send(error); return }
 
   getDadosRepoFromPk(req.params.pk).then(dados => {
-    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontradogo'}); return}
+    if (!dados[0]) { res.status(404).send({msg: 'Repositório não encontrado'}); return}
     var repositorio = { number: 1000,repo: dados[0]['endereco'], fields }
     getCommits(repositorio).then(commits => res.json(commits))
       .catch(err => res.status(404).send({msg: 'Repo location does not exist'}))
