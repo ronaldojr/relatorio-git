@@ -17,7 +17,8 @@
     "express-validator": "^3.0.0",
     "gitlog": "^2.1.2",
     "lodash": "~4.13.1",
-    "mysql": "^2.11.1"
+    "mysql": "^2.11.1",
+    "tempfile": "^1.1.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

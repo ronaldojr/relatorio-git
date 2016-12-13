@@ -151,6 +151,57 @@ describe('Relatorio', () => {
 			})
 	})
 
+	it('GET commits list from repo by pk', done => {
+		client.get('/repositorios/dados/1')
+		.end((err, res) => {
+			expect(res.status).to.equal(200)
+			expect(res.body[0].nome).to.equal('relatorio-git')
+			expect(res.body[0].endereco).to.equal(dirname)
+			done(err)
+		})
+	})
+
+	it('GET commits list from invalid repo by pk', done => {
+		client.get('/repositorios/dados/8')
+		.end((err, res) => {
+			expect(res.status).to.equal(404)
+			expect(res.body.msg).to.equal('Repositório não encontrado')
+			done(err)
+		})
+	})
+
+
+	it('GET commits list with date interval from repo', done => {
+		client.get('/repositorios/1/periodo/2016-12-07/2016-12-07')
+		.end((err, res) => {
+			expect(res.status).to.equal(200)
+			done(err)
+		})
+	})
+
+	it('GET commits list with date interval from inexistent repo ', done => {
+		client.get('/repositorios/8/periodo/2016-12-07/2016-12-07')
+		.end((err, res) => {
+			let repositorio = res.body
+			expect(repositorio.msg).to.contains('Repositório não encontrado')
+			expect(res.status).to.equal(404)
+			done(err)
+		})
+	})
+
+	it('GET commits list with date interval from repo with out folder', done => {
+		client.get('/repositorios/2/periodo/2016-12-07/2016-12-07')
+		.end((err, res) => {
+			let repositorio = res.body
+			expect(repositorio.msg).to.contains('Repo location does not exist')
+			expect(res.status).to.equal(404)
+			done(err)
+		})
+	})
+
+	it('Get sheet by date from all repos')
+	it('Get sheet by date from pk')
+
 	after(done => {
 		let connection = app.banco.conectar()
 
