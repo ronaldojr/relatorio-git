@@ -17,6 +17,7 @@ app.use("*",  (req, res, next) => {
 
 consign()
     .include('banco.js')
+    .then('RepoDao.js')
     .then('controllers.js')
     .then('routes.js')
     .into(app)
