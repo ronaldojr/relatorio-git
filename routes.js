@@ -1,13 +1,14 @@
 module.exports = app => {
 
-  app.get('/repositorios', app.controllers.listAllRepo)
-     .post('/repositorios', app.controllers.saveRepo)
-     .get('/repositorios/dados/:pk', app.controllers.getInfoByPk)
-     .get('/repositorios/:pk/commits', app.controllers.getCommitsByPk)
-     .get('/repositorios/:pk/commit/:hash', app.controllers.getCommitByHash)
-     .get('/repositorios/:pk/periodo/:inicio/:fim', app.controllers.getCommitsByDate)
-     .get('/repositorios/:pk/periodo/:inicio/:fim/planilha', app.controllers.getSheetByDateAndPk)
-     .get('/repositorios/periodo/:inicio/:fim/planilha', app.controllers.getSheetByDateFromAllRepos)
-     
-}
+  let repoCtrl = app.controllers
 
+  app.get('/repositorios', repoCtrl.listAllRepo)
+     .post('/repositorios', repoCtrl.saveRepo)
+     .get('/repositorios/dados/:pk', repoCtrl.getInfoByPk)
+     .get('/repositorios/:pk/commits', repoCtrl.getCommitsByPk)
+     .get('/repositorios/:pk/commit/:hash', repoCtrl.getCommitByHash)
+     .get('/repositorios/:pk/periodo/:inicio/:fim', repoCtrl.getCommitsByDate)
+     .get('/repositorios/:pk/periodo/:inicio/:fim/planilha', repoCtrl.getSheetByDateAndPk)
+     .get('/repositorios/periodo/:inicio/:fim/planilha', repoCtrl.getSheetByDateFromAllRepos)
+
+}

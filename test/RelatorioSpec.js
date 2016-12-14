@@ -1,4 +1,4 @@
-var app = require('../app') // use consign to inject dependencies!
+var app = require('../app')
 var client = require('supertest')(app)
 var expect = require('chai').expect
 
@@ -16,12 +16,12 @@ describe('Relatorio', () => {
 		repos.forEach( repo => {
 			connection.query('INSERT INTO repositorios SET ?', repo, (exception, result) => {
 				if(exception) console.log(exception)
-				
+
 			})
 		})
 
 		done()
-		
+
 	})
 
 
@@ -35,7 +35,7 @@ describe('Relatorio', () => {
 				done(err)
 			})
 	})
-	
+
 	it('GET commits list from repo with out folder', done => {
 		client.get('/repositorios/2/commits')
 			.end((err, res) => {
@@ -45,7 +45,7 @@ describe('Relatorio', () => {
 				done(err)
 			})
 	})
-	
+
 
 	it('GET commits list from invalid repo', done => {
 		client.get('/repositorios/3/commits')
@@ -117,7 +117,6 @@ describe('Relatorio', () => {
 		client.post('/repositorios').send({}).expect(400, done)
 	})
 
-	// use express-validator to make it easy
 	it('should validate repos name', done => {
 		client.post('/repositorios')
 			.send({
@@ -134,7 +133,6 @@ describe('Relatorio', () => {
 			})
 	})
 
-	// use express-validator to make it easy
 	it('should validate repos address', done => {
 		client.post('/repositorios')
 			.send({

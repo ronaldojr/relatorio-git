@@ -9,11 +9,10 @@ var banco = {
 
 function conectar() {
     var connection = mysql.createConnection(banco);
-    return connection; 
+    return connection;
 }
 
 
 module.exports = {
     conectar
 }
-
