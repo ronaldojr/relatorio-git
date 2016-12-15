@@ -1,4 +1,23 @@
 language: node_js
 node_js:
-  - "6"
   - "6.1"
+services:
+  - mysql
+before_install:
+  - mysql -e "DROP DATABASE IF EXISTS gitlog;
+
+  CREATE DATABASE 'gitlog';
+
+  DROP TABLE IF EXISTS 'repositorios';
+
+  CREATE TABLE repositorios (
+    'pk' INT NOT NULL AUTO_INCREMENT,
+    'nome' VARCHAR(255) NULL,
+    'endereco' VARCHAR(255) NULL,
+    PRIMARY KEY ('pk'));
+
+  DROP USER IF EXISTS 'gitlog'@'localhost';
+
+  CREATE USER 'gitlog'@'localhost' IDENTIFIED BY 'gitlog*';
+
+  GRANT ALL PRIVILEGES ON gitlog.repositorios TO 'gitlog'@'localhost';"
