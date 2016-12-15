@@ -6,6 +6,7 @@ services:
 before_install:
   - mysql -e "DROP DATABASE IF EXISTS gitlog;"
   - mysql -e "CREATE DATABASE gitlog;"
+  - mysql -e "USE gitlog"
   - mysql -e "CREATE TABLE repositorios (
     pk INT NOT NULL AUTO_INCREMENT,
     nome VARCHAR(255) NULL,
