@@ -1,7 +1,6 @@
 test:
+  <<: *default
   adapter: mysql2
-  username: root
-  password:
   database: gitlog
-
-  
+  username: root
+  encoding: utf8
