@@ -7,7 +7,7 @@ before_install:
   - mysql -e "DROP DATABASE IF EXISTS gitlog;"
   - mysql -e "CREATE DATABASE gitlog;"
   - mysql -e "USE gitlog"
-  - mysql -e "CREATE TABLE repositorios (
+  - mysql -e "CREATE TABLE `gitlog`.`repositorios` (
     pk INT NOT NULL AUTO_INCREMENT,
     nome VARCHAR(255) NULL,
     endereco VARCHAR(255) NULL,
