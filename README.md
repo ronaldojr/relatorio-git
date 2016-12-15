@@ -1,4 +1,6 @@
-# relatorio-git
+# relatorio-git 
+
+[![build status](https://travis-ci.org/ronaldojr/relatorio-git.svg?branch=master)](https://travis-ci.org/ronaldojr/relatorio-git)
 
 ####Code Style:
  * [comma-first-var.js](https://gist.github.com/isaacs/357981) 
