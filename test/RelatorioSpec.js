@@ -18,7 +18,6 @@ describe('Relatorio', () => {
     Promise.all(promises).then(() => done()).catch(done)
   })
 
-
   it('GET commits list from repo', done => {
     client.get('/repositorios/1/commits')
       .end((err, res) => {
@@ -191,9 +190,6 @@ describe('Relatorio', () => {
     })
   })
 
-  it('Get sheet by date from all repos')
-  it('Get sheet by date from pk')
-
   after(done => {
     let connection = app.banco.conectar()
 
@@ -203,3 +199,58 @@ describe('Relatorio', () => {
     })
   })
 })
+
+
+describe('Only Sheet', () => {
+
+	before(done => {
+    let repos = [
+      { nome: 'relatorio-git', endereco: dirname },
+      { nome: 'relatorio-git', endereco: dirname }
+    ]
+
+    var dao = new app.RepoDao()
+
+    let promises = repos.map(repo => { return dao.insert(repo) })
+
+    Promise.all(promises).then(() => done()).catch(done)
+  })
+
+  it('Get sheet by date from all repos', done => {
+    client.get('/repositorios/periodo/2016-01-01/2016-12-13/planilha')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(200)
+  	  	expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  	  	done(err)
+  	  })
+  })
+
+  it('Get sheet by date from pk', done => {
+  	client.get('/repositorios/1/periodo/2016-01-01/2016-12-16/planilha')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(200)
+  	  	expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  	  	done(err)
+  	  })
+  })
+
+  after(done => {
+    let connection = app.banco.conectar()
+
+    connection.query('TRUNCATE repositorios', (exception, result) => {
+      if(exception) console.log(exception)
+      done()
+    })
+  })
+
+})
+
+
+describe('All Sheet', () => {
+
+  it('Error on get sheet by date from all repos')
+
+  it('Error on Get sheet by date from pk')
+
+})
+

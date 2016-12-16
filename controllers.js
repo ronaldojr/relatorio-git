@@ -194,6 +194,10 @@ module.exports = app => {
             .then( worksheet => {
               saveSheetAndDownload(worksheet,workbook, res)
             })
+            .catch( err => {
+              res.status(404).send( {msg: 'Repo location does not exist'} )
+              return
+            })
         }
       })
       .catch( err => console.log(err) )
@@ -206,6 +210,10 @@ module.exports = app => {
         let rows = repos.map( repo => { return insertRowSheetByDate(repo, inicio, fim, worksheet) })
         Promise.all(rows).then( worksheets => {
           saveSheetAndDownload(worksheets[worksheets.length-1],workbook, res)
+        })
+        .catch( err => {
+          res.status(404).send( {msg: 'Repo location does not exist'} )
+          return
         })
       })
       .catch( err => console.log(err) )
@@ -223,8 +231,6 @@ module.exports = app => {
         , before: before
         , fields
         }
-      console.log(reposit.length)
-      console.log( Object.prototype.toString.call(reposit))  
       gitlog(repositorio, (error, commits) => {
         if (error) reject(error)
         commits.forEach( commit => {
