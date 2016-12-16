@@ -1,5 +1,4 @@
 test:
-  <<: *default
   adapter: mysql2
   database: gitlog
   username: root

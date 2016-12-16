@@ -130,7 +130,7 @@ module.exports = app => {
     var workbook = new Excel.Workbook()
     makeSheet(workbook)
       .then( worksheet => {
-      getDadosRepositorio( req.params.pk
+      createSheetOneRepo( req.params.pk
                          , req.params.inicio
                          , req.params.fim
                          , workbook
@@ -145,7 +145,7 @@ module.exports = app => {
     var workbook = new Excel.Workbook()
     makeSheet(workbook)
       .then( worksheet => {
-        getDadosAllRepositorios( req.params.inicio
+        createSheetAllRepo( req.params.inicio
                                , req.params.fim
                                , workbook
                                , worksheet
@@ -183,40 +183,40 @@ module.exports = app => {
   }
 
 
-  function getDadosRepositorio (pk, inicio, fim, workbook, worksheet, res) {
-    var connection = app.banco.conectar()
-    var query_nome_repositorio = 'SELECT nome,endereco FROM repositorios where pk=?'
-    connection.query(query_nome_repositorio, [pk], (err, data, fields) => {
-      if (err) console.log(err)
-      commitsEntreDatas(data[0], inicio, fim, worksheet)
-      setTimeout( () => {
-        gravarPlanilha(worksheet,workbook, res)
-      }, 5000)
-      connection.destroy()
-    })
-  }
-
-
-  function getDadosAllRepositorios (inicio, fim, workbook, worksheet, res) {
-    var connection = app.banco.conectar()
-    var query_nome_repositorio = 'SELECT nome,endereco FROM repositorios'
-    connection.query(query_nome_repositorio, (err, data, fields) => {
-      if (err) console.log(err)
-      data.forEach( item => {
-        commitsEntreDatas(item, inicio, fim, worksheet)
+  function createSheetOneRepo (pk, inicio, fim, workbook, worksheet, res) {
+    dao.getDadosRepoFromPk(pk)
+      .then( dados => {
+        if (!dados[0]) {
+          res.status(404).send({msg: 'Repositório não encontrado'})
+          return
+        } else {
+          insertRowSheetByDate(dados[0], inicio, fim, worksheet)
+          setTimeout( () => {
+            saveSheetAndDownload(worksheet,workbook, res)
+          }, 5000)
+        }
       })
-      setTimeout( () => {
-        gravarPlanilha(worksheet,workbook, res)
-      }, 5000)
-      connection.destroy()
-    })
+      .catch( err => console.log(err) )
   }
 
 
-  function commitsEntreDatas (reposit, inicio, fim, worksheet) {
+  function createSheetAllRepo (inicio, fim, workbook, worksheet, res) {
+    dao.listAll()
+      .then( repos => {
+        repos.forEach( repo => {
+          insertRowSheetByDate(repo, inicio, fim, worksheet)
+        })
+        setTimeout( () => {
+          saveSheetAndDownload(worksheet,workbook, res)
+        }, 5000)
+      })
+      .catch( err => console.log(err) )
+  }
+
+
+  function insertRowSheetByDate (reposit, inicio, fim, worksheet) {
     var after = inicio + ' 00:00'
     var before = fim + ' 23:59'
-    console.log(after,before)
     var repositorio =
       { number: 10000
       , repo: reposit.endereco
@@ -225,7 +225,7 @@ module.exports = app => {
       , fields
       }
     gitlog(repositorio, (error, commits) => {
-      if (error) console.log(error)
+      if (error) reject(error)
       commits.forEach( commit => {
         var explodeData = (commit.authorDate).split(' ')
         var data = new Date(explodeData[0])
@@ -258,7 +258,7 @@ module.exports = app => {
   }
 
 
-  function gravarPlanilha (worksheet, workbook, res) {
+  function saveSheetAndDownload (worksheet, workbook, res) {
     worksheet.getColumn(1).alignment = { vertical: 'middle', horizontal: 'center'}
     worksheet.getColumn(2).alignment = { vertical: 'middle', horizontal: 'center'}
     worksheet.getColumn(3).alignment = { vertical: 'middle', horizontal: 'center'}
@@ -279,7 +279,6 @@ module.exports = app => {
     var tempFilePath = tempfile('.xlsx')
     workbook.xlsx.writeFile(tempFilePath)
       .then( () => {
-        console.log('file is written')
         res.sendFile(tempFilePath, err => {
           if (err) console.log('error on downloading .xlsx file')
         })
