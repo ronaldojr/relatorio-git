@@ -191,9 +191,9 @@ module.exports = app => {
           return
         } else {
           insertRowSheetByDate(dados[0], inicio, fim, worksheet)
-          setTimeout( () => {
-            saveSheetAndDownload(worksheet,workbook, res)
-          }, 5000)
+            .then( worksheet => {
+              saveSheetAndDownload(worksheet,workbook, res)
+            })
         }
       })
       .catch( err => console.log(err) )
@@ -203,35 +203,47 @@ module.exports = app => {
   function createSheetAllRepo (inicio, fim, workbook, worksheet, res) {
     dao.listAll()
       .then( repos => {
-        repos.forEach( repo => {
-          insertRowSheetByDate(repo, inicio, fim, worksheet)
+        let rows = repos.map( repo => { return insertRowSheetByDate(repo, inicio, fim, worksheet) })
+        Promise.all(rows).then( worksheets => {
+          saveSheetAndDownload(worksheets[worksheets.length-1],workbook, res)
         })
-        setTimeout( () => {
-          saveSheetAndDownload(worksheet,workbook, res)
-        }, 5000)
       })
       .catch( err => console.log(err) )
   }
 
 
   function insertRowSheetByDate (reposit, inicio, fim, worksheet) {
-    var after = inicio + ' 00:00'
-    var before = fim + ' 23:59'
-    var repositorio =
-      { number: 10000
-      , repo: reposit.endereco
-      , after: after
-      , before: before
-      , fields
-      }
-    gitlog(repositorio, (error, commits) => {
-      if (error) reject(error)
-      commits.forEach( commit => {
-        var explodeData = (commit.authorDate).split(' ')
-        var data = new Date(explodeData[0])
-        var hora = explodeData[1]
-        if (commit.files) {
-          commit.files.forEach( file => {
+    return new Promise ( (fulfill, reject) => {
+      var after = inicio + ' 00:00'
+      var before = fim + ' 23:59'
+      var repositorio =
+        { number: 10000
+        , repo: reposit.endereco
+        , after: after
+        , before: before
+        , fields
+        }
+      console.log(reposit.length)
+      console.log( Object.prototype.toString.call(reposit))  
+      gitlog(repositorio, (error, commits) => {
+        if (error) reject(error)
+        commits.forEach( commit => {
+          var explodeData = (commit.authorDate).split(' ')
+          var data = new Date(explodeData[0])
+          var hora = explodeData[1]
+          if (commit.files) {
+            commit.files.forEach( file => {
+              worksheet.addRow(
+                { sistema: reposit.nome
+                , hash: commit.abbrevHash
+                , data: data
+                , hora: hora
+                , autor: commit.authorName
+                , mensagem: commit.subject
+                , arquivos: file
+                })
+            })
+          } else {
             worksheet.addRow(
               { sistema: reposit.nome
               , hash: commit.abbrevHash
@@ -239,20 +251,11 @@ module.exports = app => {
               , hora: hora
               , autor: commit.authorName
               , mensagem: commit.subject
-              , arquivos: file
+              , arquivos: commit.files
               })
-          })
-        } else {
-          worksheet.addRow(
-            { sistema: reposit.nome
-            , hash: commit.abbrevHash
-            , data: data
-            , hora: hora
-            , autor: commit.authorName
-            , mensagem: commit.subject
-            , arquivos: commit.files
-            })
-        }
+          }
+        })
+        fulfill(worksheet)
       })
     })
   }
