@@ -208,8 +208,8 @@ module.exports = app => {
     dao.listAll()
       .then( repos => {
         let rows = repos.map( repo => { return insertRowSheetByDate(repo, inicio, fim, worksheet) })
-        Promise.all(rows).then( worksheets => {
-          saveSheetAndDownload(worksheets[worksheets.length-1],workbook, res)
+        Promise.all(rows).then( () => {
+          saveSheetAndDownload(worksheet,workbook, res)
         })
         .catch( err => {
           res.status(404).send( {msg: 'Repo location does not exist'} )

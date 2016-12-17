@@ -4,7 +4,7 @@ var expect = require('chai').expect
 
 var dirname = process.cwd()
 
-describe('Relatorio', () => {
+describe('Controllers', () => {
   before(done => {
     let repos = [
       { nome: 'relatorio-git', endereco: dirname },
@@ -246,11 +246,47 @@ describe('Only Sheet', () => {
 })
 
 
-describe('All Sheet', () => {
+describe('Error, Sheet!', () => {
 
-  it('Error on get sheet by date from all repos')
+  before(done => {
+    let repos = [
+      { nome: 'relatorio-git', endereco: dirname },
+      { nome: 'relatorio-git', endereco: "fake-error" }
+    ]
 
-  it('Error on Get sheet by date from pk')
+    var dao = new app.RepoDao()
+
+    let promises = repos.map(repo => { return dao.insert(repo) })
+
+    Promise.all(promises).then(() => done()).catch(done)
+  })
+
+  it('Error on get sheet by date from all repos', done => {
+    client.get('/repositorios/periodo/2016-01-01/2016-12-13/planilha')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(404)
+  	  	expect(res.body.msg).to.equal('Repo location does not exist')
+  	  	done(err)
+  	  })
+  })
+
+  it('Error on Get sheet by date from pk', done => {
+    client.get('/repositorios/2/periodo/2016-01-01/2016-12-13/planilha')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(404)
+  	  	expect(res.body.msg).to.equal('Repo location does not exist')
+  	  	done(err)
+  	  })
+  })
+
+  after(done => {
+    let connection = app.banco.conectar()
+
+    connection.query('TRUNCATE repositorios', (exception, result) => {
+      if(exception) console.log(exception)
+      done()
+    })
+  })
 
 })
 
