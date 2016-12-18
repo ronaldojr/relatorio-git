@@ -11,12 +11,12 @@
   "dependencies": {
     "body-parser": "^1.15.1",
     "consign": "^0.1.2",
-    "dateformat": "^1.0.12",
+    "dateformat": "^2.0.0",
     "exceljs": "^0.2.24",
-    "express": "~4.13.4",
+    "express": "~4.14.0",
     "express-validator": "^3.0.0",
     "gitlog": "^2.1.2",
-    "lodash": "~4.13.1",
+    "lodash": "~4.17.2",
     "mysql": "^2.11.1",
     "tempfile": "^1.1.1"
   },
