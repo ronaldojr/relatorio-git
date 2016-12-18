@@ -16,7 +16,7 @@ class RepoDao {
 
   // It would seems cleary if in another file...
   createPromise(query, params) {
-    var connection = app.banco.conectar()
+    var connection = app.config.banco.conectar()
     return new Promise( (fulfill, rejection) => {
       connection.query(query, params, (err, result) => {
         if(err) rejection(err)

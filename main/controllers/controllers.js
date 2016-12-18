@@ -4,7 +4,7 @@ const tempfile = require('tempfile')
 
 
 module.exports = app => {
-  var dao = new app.RepoDao()
+  var dao = new app.main.models.RepoDao()
 
   var fields =
     [ 'hash'

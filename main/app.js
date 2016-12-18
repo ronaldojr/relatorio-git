@@ -16,10 +16,10 @@ app.use("*",  (req, res, next) => {
 });
 
 consign()
-    .include('banco.js')
-    .then('RepoDao.js')
-    .then('controllers.js')
-    .then('routes.js')
+    .include('./config/banco.js')
+    .then('./main/models')
+    .then('./main/controllers')
+    .then('./config/routes.js')
     .into(app)
 
 module.exports = app;

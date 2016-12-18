@@ -1,6 +1,6 @@
 module.exports = app => {
 
-  let repoCtrl = app.controllers
+  let repoCtrl = app.main.controllers.controllers
 
   app.get('/repositorios', repoCtrl.listAllRepo)
      .post('/repositorios', repoCtrl.saveRepo)

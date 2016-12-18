@@ -1,4 +1,4 @@
-var app = require('../app')
+var app = require('../main/app')
 var client = require('supertest')(app)
 var expect = require('chai').expect
 
@@ -11,7 +11,7 @@ describe('Controllers', () => {
       { pk: 2, nome: 'fake-git', endereco: 'fake-error' }
     ]
 
-    var dao = new app.RepoDao()
+    var dao = new app.main.models.RepoDao()
 
     let promises = repos.map(repo => { return dao.insert(repo) })
 
@@ -191,7 +191,7 @@ describe('Controllers', () => {
   })
 
   after(done => {
-    let connection = app.banco.conectar()
+    let connection = app.config.banco.conectar()
 
     connection.query('TRUNCATE repositorios', (exception, result) => {
       if(exception) console.log(exception)
@@ -209,7 +209,7 @@ describe('Only Sheet', () => {
       { pk: 2, nome: 'relatorio-git', endereco: dirname }
     ]
 
-    var dao = new app.RepoDao()
+    var dao = new app.main.models.RepoDao()
 
     let promises = repos.map(repo => { return dao.insert(repo) })
 
@@ -235,7 +235,7 @@ describe('Only Sheet', () => {
   })
 
   after(done => {
-    let connection = app.banco.conectar()
+    let connection = app.config.banco.conectar()
 
     connection.query('TRUNCATE repositorios', (exception, result) => {
       if(exception) console.log(exception)
@@ -254,7 +254,7 @@ describe('Error, Sheet!', () => {
       { pk: 2, nome: 'relatorio-git', endereco: "fake-error" }
     ]
 
-    var dao = new app.RepoDao()
+    var dao = new app.main.models.RepoDao()
 
     let promises = repos.map(repo => { return dao.insert(repo) })
 
@@ -280,7 +280,7 @@ describe('Error, Sheet!', () => {
   })
 
   after(done => {
-    let connection = app.banco.conectar()
+    let connection = app.config.banco.conectar()
 
     connection.query('TRUNCATE repositorios', (exception, result) => {
       if(exception) console.log(exception)

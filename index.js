@@ -1,4 +1,4 @@
-let app = require('./app')
+let app = require('./main/app')
 let dateFormat  = require('dateformat')
 
 app.listen(3000, () => {
