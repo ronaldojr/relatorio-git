@@ -11,7 +11,7 @@ class RepoDao {
   }
 
   insert(repo) {
-    return this.createPromise('INSERT INTO repositorios (nome, endereco) values (?, ?)', [repo.nome, repo.endereco])
+    return this.createPromise('INSERT INTO repositorios (pk, nome, endereco) values (?, ?, ?)', [repo.pk, repo.nome, repo.endereco])
   }
 
   // It would seems cleary if in another file...

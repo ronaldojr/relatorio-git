@@ -14,7 +14,7 @@
     "dateformat": "^2.0.0",
     "exceljs": "^0.2.24",
     "express": "~4.14.0",
-    "express-validator": "^3.0.0",
+    "express-validator": "^3.1.0",
     "gitlog": "^2.1.2",
     "lodash": "~4.17.2",
     "mysql": "^2.11.1",

@@ -7,8 +7,8 @@ var dirname = process.cwd()
 describe('Controllers', () => {
   before(done => {
     let repos = [
-      { nome: 'relatorio-git', endereco: dirname },
-      { nome: 'fake-git', endereco: 'fake-error' }
+      { pk: 1, nome: 'relatorio-git', endereco: dirname },
+      { pk: 2, nome: 'fake-git', endereco: 'fake-error' }
     ]
 
     var dao = new app.RepoDao()
@@ -205,8 +205,8 @@ describe('Only Sheet', () => {
 
 	before(done => {
     let repos = [
-      { nome: 'relatorio-git', endereco: dirname },
-      { nome: 'relatorio-git', endereco: dirname }
+      { pk: 1, nome: 'relatorio-git', endereco: dirname },
+      { pk: 2, nome: 'relatorio-git', endereco: dirname }
     ]
 
     var dao = new app.RepoDao()
@@ -250,8 +250,8 @@ describe('Error, Sheet!', () => {
 
   before(done => {
     let repos = [
-      { nome: 'relatorio-git', endereco: dirname },
-      { nome: 'relatorio-git', endereco: "fake-error" }
+      { pk: 1, nome: 'relatorio-git', endereco: dirname },
+      { pk: 2, nome: 'relatorio-git', endereco: "fake-error" }
     ]
 
     var dao = new app.RepoDao()
