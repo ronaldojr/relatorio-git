@@ -4,9 +4,9 @@ const tempfile = require('tempfile')
 
 
 module.exports = app => {
-  var dao = new app.main.models.RepoDao()
+  let dao = new app.main.models.RepoDao()
 
-  var fields =
+  let fields =
     [ 'hash'
     , 'abbrevHash'
     , 'subject'
@@ -29,7 +29,7 @@ module.exports = app => {
     req.checkBody('nome','O campo nome não pode ser vazio.').notEmpty()
     req.checkBody('endereco','O campo endereço não pode ser vazio.').notEmpty()
 
-    var error = req.validationErrors()
+    let error = req.validationErrors()
 
     if (error) {
       res.status(400).send(error)
@@ -58,106 +58,145 @@ module.exports = app => {
   controller.getCommitsByPk = (req, res) => {
     dao.getDadosRepoFromPk(req.params.pk)
       .then(dados => {
+
         if (!dados[0]) {
           res.status(404).send({msg: 'Repositório não encontrado'})
           return
         }
-        var repositorio =
+
+        let repositorio =
           { number: 10000
           ,repo: dados[0]['endereco']
           , fields
           }
-        getCommits(repositorio)
-          .then(commits => res.json(commits))
-          .catch(err => res.status(404).send({msg: 'Repo location does not exist'}))
+
+        return Promise.all([dados,getCommits(repositorio)])
+
       })
-      .catch( err => console.log(err) )
+      .then(promiseArray => res.json(promiseArray[1]))
+      .catch( err => {
+
+        if (res.statusCode != 404) {
+          res.status(404).send({msg: 'Repo location does not exist'})
+        }
+
+      })
   }
 
 
   controller.getCommitByHash = (req, res) => {
     dao.getDadosRepoFromPk(req.params.pk)
       .then( dados => {
+
         if (!dados[0]) {
           res.status(404).send({msg: 'Repositório não encontrado'})
           return
         }
-        var repositorio =
+
+        let repositorio =
           { number: 10000
           , repo: dados[0]['endereco']
           , fields
           }
-        getCommits(repositorio)
-          .then( commits => {
-            var hashNotFound = true
-            commits.forEach( commit => {
-              if ( ( commit.hash == req.params.hash || commit.abbrevHash == req.params.hash) && hashNotFound == true) {
-                hashNotFound = false
-                res.json(commit)
-              }
-            })
-            if (hashNotFound) res.status(404).send({msg: 'Hash não encontrada'}).end()
-          })
-          .catch( err => res.status(404).send({msg: 'Repo location does not exist'}) )
+
+        return Promise.all([dados, getCommits(repositorio)])
+
       })
-      .catch( err => console.log(err) )
+      .then(promiseArray => {return promiseArray[1]})
+      .then(commits => {
+
+        let hashNotFound = true
+
+        commits.forEach( commit => {
+
+          let hash = commit.hash == req.params.hash
+          let abbrevHash = commit.abbrevHash == req.params.hash
+
+          if ( ( hash || abbrevHash ) && hashNotFound == true) {
+            hashNotFound = false
+            res.json(commit)
+          }
+
+        })
+
+        if (hashNotFound) {
+          res.status(404).send({msg: 'Hash não encontrada'}).end()
+        }
+
+      })
+      .catch( err => {
+
+        if (res.statusCode != 404) {
+          res.status(404).send({msg: 'Repo location does not exist'})
+        }
+
+      })
   }
 
 
   controller.getCommitsByDate = (req, res) => {
     dao.getDadosRepoFromPk(req.params.pk)
       .then( dados => {
+
         if (!dados[0]) {
           res.status(404).send( {msg: 'Repositório não encontrado'} )
           return
         }
-        var repositorio =
+
+        let repositorio =
           { number: 10000
           , repo: dados[0]['endereco']
           , after: req.params.inicio + ' 00:00'
           , before: req.params.fim + ' 23:59'
           , fields
           }
-        getCommits(repositorio)
-          .then( commits => res.json(commits) )
-          .catch( err => res.status(404).send( {msg: 'Repo location does not exist'} ) )
+
+        return Promise.all([dados, getCommits(repositorio)])
+
       })
-     .catch(err => console.log(err))
+      .then(promiseArray => res.json(promiseArray[1]))
+      .catch(err => {
+
+        if (res.statusCode != 404) {
+          res.status(404).send({msg: 'Repo location does not exist'})
+        }
+
+      })
   }
 
 
   controller.getSheetByDateAndPk = (req, res) => {
-    var workbook = new Excel.Workbook()
+    let workbook = new Excel.Workbook()
     makeSheet(workbook)
       .then( worksheet => {
-      createSheetOneRepo( req.params.pk
-                         , req.params.inicio
-                         , req.params.fim
-                         , workbook
-                         , worksheet
-                         , res
-                         )
+        createSheetOneRepo( req.params.pk
+                          , req.params.inicio
+                          , req.params.fim
+                          , workbook
+                          , worksheet
+                          , res
+                          )
       })
   }
 
 
   controller.getSheetByDateFromAllRepos = (req, res) => {
-    var workbook = new Excel.Workbook()
+    let workbook = new Excel.Workbook()
     makeSheet(workbook)
       .then( worksheet => {
         createSheetAllRepo( req.params.inicio
-                               , req.params.fim
-                               , workbook
-                               , worksheet
-                               , res
-                               )
+                          , req.params.fim
+                          , workbook
+                          , worksheet
+                          , res
+                          )
       })
   }
 
 
   function makeSheet (workbook) {
     return new Promise( (fulfill,reject) => {
-      var worksheet = workbook.addWorksheet('Repositorios')
+      let worksheet = workbook.addWorksheet('Repositorios')
       worksheet.columns =
         [ { header: 'Sistema', key: 'sistema', width: 32 }
         , { header: 'Hash', key: 'hash', width: 10 }
@@ -186,45 +225,55 @@ module.exports = app => {
   function createSheetOneRepo (pk, inicio, fim, workbook, worksheet, res) {
     dao.getDadosRepoFromPk(pk)
       .then( dados => {
+
         if (!dados[0]) {
           res.status(404).send({msg: 'Repositório não encontrado'})
           return
-        } else {
-          insertRowSheetByDate(dados[0], inicio, fim, worksheet)
-            .then( worksheet => {
-              saveSheetAndDownload(worksheet,workbook, res)
-            })
-            .catch( err => {
-              res.status(404).send( {msg: 'Repo location does not exist'} )
-              return
-            })
         }
+
+        return Promise.all([ dados, insertRowSheetByDate( dados[0], inicio, fim, worksheet)])
+
       })
-      .catch( err => console.log(err) )
+      .then(arrayPromise => {return arrayPromise[1]})
+      .then(worksheet => saveSheetAndDownload(worksheet,workbook, res))
+      .catch( err => {
+
+        if (res.codeStatus != 404) {
+          res.status(404).send( {msg: 'Repo location does not exist'} )
+        }
+
+      })
   }
 
 
   function createSheetAllRepo (inicio, fim, workbook, worksheet, res) {
     dao.listAll()
       .then( repos => {
-        let rows = repos.map( repo => { return insertRowSheetByDate(repo, inicio, fim, worksheet) })
-        Promise.all(rows).then( () => {
-          saveSheetAndDownload(worksheet,workbook, res)
-        })
-        .catch( err => {
-          res.status(404).send( {msg: 'Repo location does not exist'} )
-          return
-        })
+
+        let rows = repos.map( repo => { return insertRowSheetByDate( repo, inicio, fim, worksheet ) })
+        
+        return Promise.all(rows)  
       })
-      .catch( err => console.log(err) )
+      .then(() => {
+
+        saveSheetAndDownload(worksheet, workbook, res)
+
+      })
+      .catch( err => {
+
+        if (res.statusCode != 404) {
+          res.status(404).send( {msg: 'Repo location does not exist'} )
+        }
+
+      })
   }
 
 
   function insertRowSheetByDate (reposit, inicio, fim, worksheet) {
     return new Promise ( (fulfill, reject) => {
-      var after = inicio + ' 00:00'
-      var before = fim + ' 23:59'
-      var repositorio =
+      let after = inicio + ' 00:00'
+      let before = fim + ' 23:59'
+      let repositorio =
         { number: 10000
         , repo: reposit.endereco
         , after: after
@@ -234,9 +283,9 @@ module.exports = app => {
       gitlog(repositorio, (error, commits) => {
         if (error) reject(error)
         commits.forEach( commit => {
-          var explodeData = (commit.authorDate).split(' ')
-          var data = new Date(explodeData[0])
-          var hora = explodeData[1]
+          let explodeData = (commit.authorDate).split(' ')
+          let data = new Date(explodeData[0])
+          let hora = explodeData[1]
           if (commit.files) {
             commit.files.forEach( file => {
               worksheet.addRow(
@@ -285,7 +334,7 @@ module.exports = app => {
           }
       })
     })
-    var tempFilePath = tempfile('.xlsx')
+    let tempFilePath = tempfile('.xlsx')
     workbook.xlsx.writeFile(tempFilePath)
       .then( () => {
         res.sendFile(tempFilePath, err => {
