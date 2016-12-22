@@ -49,7 +49,7 @@ module.exports = app => {
           res.status(404).send({msg: 'Repositório não encontrado'})
           return
         }
-        else res.json(dados)
+        res.json(dados)
       })
       .catch( err => console.log(err) )
   }
@@ -70,10 +70,10 @@ module.exports = app => {
           , fields
           }
 
-        return Promise.all([dados,getCommits(repositorio)])
+        return getCommits(repositorio)
 
       })
-      .then(promiseArray => res.json(promiseArray[1]))
+      .then(commits => res.json(commits))
       .catch( err => {
 
         if (res.statusCode != 404) {
@@ -99,10 +99,9 @@ module.exports = app => {
           , fields
           }
 
-        return Promise.all([dados, getCommits(repositorio)])
+        return getCommits(repositorio)
 
       })
-      .then(promiseArray => {return promiseArray[1]})
       .then(commits => {
 
         let hashNotFound = true
@@ -151,10 +150,10 @@ module.exports = app => {
           , fields
           }
 
-        return Promise.all([dados, getCommits(repositorio)])
+        return getCommits(repositorio)
 
       })
-      .then(promiseArray => res.json(promiseArray[1]))
+      .then(commits => res.json(commits))
       .catch(err => {
 
         if (res.statusCode != 404) {
@@ -231,10 +230,9 @@ module.exports = app => {
           return
         }
 
-        return Promise.all([ dados, insertRowSheetByDate( dados[0], inicio, fim, worksheet)])
+        return insertRowSheetByDate( dados[0], inicio, fim, worksheet)
 
       })
-      .then(arrayPromise => {return arrayPromise[1]})
       .then(worksheet => saveSheetAndDownload(worksheet,workbook, res))
       .catch( err => {
 
@@ -250,7 +248,9 @@ module.exports = app => {
     dao.listAll()
       .then( repos => {
 
-        let rows = repos.map( repo => { return insertRowSheetByDate( repo, inicio, fim, worksheet ) })
+        let rows = repos.map( repo => { 
+          return insertRowSheetByDate( repo, inicio, fim, worksheet ) 
+        })
         
         return Promise.all(rows)  
       })
@@ -322,8 +322,17 @@ module.exports = app => {
     worksheet.getColumn(3).alignment = { vertical: 'middle', horizontal: 'center'}
     worksheet.getColumn(4).alignment = { vertical: 'middle', horizontal: 'center'}
     worksheet.getColumn(5).alignment = { vertical: 'middle', horizontal: 'center'}
-    worksheet.getColumn(6).alignment = { wrapText: true,  vertical: 'middle', horizontal: 'left'}
-    worksheet.getColumn(7).alignment = { wrapText: true,  vertical: 'middle', horizontal: 'left' }
+
+    worksheet.getColumn(6).alignment = { wrapText: true
+                                       , vertical: 'middle'
+                                       , horizontal: 'left'
+                                       }
+
+    worksheet.getColumn(7).alignment = { wrapText: true
+                                       , vertical: 'middle'
+                                       , horizontal: 'left' 
+                                       }
+                                       
     worksheet.eachRow( (row, rowNumber) => {
       row.eachCell( (cell, colNumber) => {
         cell.border =
