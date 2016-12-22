@@ -42,6 +42,35 @@ module.exports = app => {
   }
 
 
+  /*controller.deleteRepo = (req, res) => {
+    dao.delete(req.params.pk)
+      .then(result => {
+        if (result.affectedRows === 1) res.status(202).json({'msg':'Accepted'})
+        else res.status(204)
+      })
+  }
+
+
+  controller.updateRepo = (req, res) => {
+    req.checkBody('pk','O campo nome não pode ser vazio.').notEmpty()
+    req.checkBody('nome','O campo nome não pode ser vazio.').notEmpty()
+    req.checkBody('endereco','O campo endereço não pode ser vazio.').notEmpty()
+
+    let error = req.validationErrors()
+
+    if (error) {
+      res.status(404).send(error)
+      return
+    }
+
+    dao.update(req.body)
+      .then(result => {
+        if (result.affectedRows === 1) res.status(200).json({'msg':'OK'})
+        else res.status(204)
+      })
+  }*/
+
+
   controller.getInfoByPk = (req, res) => {
     dao.getDadosRepoFromPk(req.params.pk)
       .then( dados => {

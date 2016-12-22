@@ -289,4 +289,97 @@ describe('Error, Sheet!', () => {
   })
 
 })
+/*
+describe('Delete repo', () => {
 
+  before(done => {
+    let repos = [
+      { pk: 1, nome: 'relatorio-git', endereco: dirname },
+      { pk: 2, nome: 'relatorio-git', endereco: dirname }
+    ]
+
+    var dao = new app.main.models.RepoDao()
+
+    let promises = repos.map(repo => { return dao.insert(repo) })
+
+    Promise.all(promises).then(() => done()).catch(done)
+  })
+
+  it('Delete repo from pk', done => {
+    client.delete('/repositorios/1')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(202)
+        expect(res.body.msg).to.equal('Accepted')
+  	  	done(err)
+  	  })
+  })
+
+  it('204 on delete invalid repo from pk ', done => {
+    client.delete('/repositorios/3')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(204)
+  	  	done(err)
+  	  })
+  })
+
+
+
+  after(done => {
+    let connection = app.config.banco.conectar()
+
+    connection.query('TRUNCATE repositorios', (exception, result) => {
+      if(exception) console.log(exception)
+      done()
+    })
+  })
+
+})
+
+
+describe('Update repo', () => {
+
+  before(done => {
+    let repos = [ { pk: 1, nome: 'relatorio', endereco: dirname }
+                , { pk: 2, nome: 'relatorio-git-2', endereco: dirname }
+                ]
+
+    var dao = new app.main.models.RepoDao()
+
+    let promises = repos.map(repo => { return dao.insert(repo) })
+
+    Promise.all(promises).then(() => done()).catch(done)
+  })
+
+  it('Update repo from pk', done => {
+    client.put('/repositorios/1')
+      .send({ pk: 1
+            , nome: 'relatorio-git'
+            , endereco: dirname
+            })
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(200)
+        expect(res.body.msg).to.equal('OK')
+  	  	done(err)
+  	  })
+  })
+
+
+  it('204 on update invalid repo from pk ', done => {
+    client.put('/repositorios')
+  	  .end( (err, res) => {
+  	  	expect(res.status).to.equal(404)
+  	  	done(err)
+  	  })
+  })
+
+
+  after(done => {
+    let connection = app.config.banco.conectar()
+
+    connection.query('TRUNCATE repositorios', (exception, result) => {
+      if(exception) console.log(exception)
+      done()
+    })
+  })
+
+}) */

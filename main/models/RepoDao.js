@@ -14,6 +14,10 @@ class RepoDao {
     return this.createPromise('INSERT INTO repositorios (pk, nome, endereco) values (?, ?, ?)', [repo.pk, repo.nome, repo.endereco])
   }
 
+  delete(pk) {
+    return this.createPromise('DELETE FROM repositorios WHERE pk=?', pk)
+  }
+
   // It would seems cleary if in another file...
   createPromise(query, params) {
     var connection = app.config.banco.conectar()
