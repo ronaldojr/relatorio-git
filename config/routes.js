@@ -5,7 +5,7 @@ module.exports = app => {
   app.get('/repositorios', repoCtrl.listAllRepo)
      .post('/repositorios', repoCtrl.saveRepo)
      .put('/repositorios', repoCtrl.updateRepo)
-     .delete('/repositorios/:pk', repoCtrl.deleteRepo)
+     .delete('/repositorios', repoCtrl.deleteRepo)
      .get('/repositorios/dados/:pk', repoCtrl.getInfoByPk)
      .get('/repositorios/:pk/commits', repoCtrl.getCommitsByPk)
      .get('/repositorios/:pk/commit/:hash', repoCtrl.getCommitByHash)

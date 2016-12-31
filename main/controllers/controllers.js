@@ -42,11 +42,20 @@ module.exports = app => {
   }
 
 
-  /*controller.deleteRepo = (req, res) => {
-    dao.delete(req.params.pk)
+  controller.deleteRepo = (req, res) => {
+    req.checkBody('pk','O campo pk não pode ser vazio.').notEmpty()
+
+    let error = req.validationErrors()
+
+    if (error) {
+      res.status(400).send(error)
+      return
+    }
+    
+    dao.delete(req.body.pk)
       .then(result => {
         if (result.affectedRows === 1) res.status(202).json({'msg':'Accepted'})
-        else res.status(204)
+        else res.status(204).end()
       })
   }
 
@@ -66,9 +75,9 @@ module.exports = app => {
     dao.update(req.body)
       .then(result => {
         if (result.affectedRows === 1) res.status(200).json({'msg':'OK'})
-        else res.status(204)
+        else res.status(204).end()
       })
-  }*/
+  }
 
 
   controller.getInfoByPk = (req, res) => {

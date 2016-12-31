@@ -289,7 +289,7 @@ describe('Error, Sheet!', () => {
   })
 
 })
-/*
+
 describe('Delete repo', () => {
 
   before(done => {
@@ -306,7 +306,8 @@ describe('Delete repo', () => {
   })
 
   it('Delete repo from pk', done => {
-    client.delete('/repositorios/1')
+    client.del('/repositorios')
+      .send( { pk: 1 })
   	  .end( (err, res) => {
   	  	expect(res.status).to.equal(202)
         expect(res.body.msg).to.equal('Accepted')
@@ -315,7 +316,10 @@ describe('Delete repo', () => {
   })
 
   it('204 on delete invalid repo from pk ', done => {
-    client.delete('/repositorios/3')
+    client.delete('/repositorios')
+      .send({
+        pk: 3
+      })
   	  .end( (err, res) => {
   	  	expect(res.status).to.equal(204)
   	  	done(err)
@@ -351,7 +355,7 @@ describe('Update repo', () => {
   })
 
   it('Update repo from pk', done => {
-    client.put('/repositorios/1')
+    client.put('/repositorios')
       .send({ pk: 1
             , nome: 'relatorio-git'
             , endereco: dirname
@@ -382,4 +386,4 @@ describe('Update repo', () => {
     })
   })
 
-}) */
+}) 

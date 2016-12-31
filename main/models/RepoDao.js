@@ -15,8 +15,13 @@ class RepoDao {
   }
 
   delete(pk) {
-    return this.createPromise('DELETE FROM repositorios WHERE pk=?', pk)
+    return this.createPromise('DELETE FROM repositorios WHERE pk = ?', pk)
   }
+
+  update(repo) {
+    return this.createPromise('UPDATE repositorios SET nome = ?, endereco = ? WHERE pk = ?', [repo.nome, repo.endereco, repo.pk])
+  }
+
 
   // It would seems cleary if in another file...
   createPromise(query, params) {
