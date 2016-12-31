@@ -203,7 +203,7 @@ describe('Controllers', () => {
 
 describe('Only Sheet', () => {
 
-	before(done => {
+  before(done => {
     let repos = [
       { pk: 1, nome: 'relatorio-git', endereco: dirname },
       { pk: 2, nome: 'relatorio-git', endereco: dirname }
@@ -218,20 +218,20 @@ describe('Only Sheet', () => {
 
   it('Get sheet by date from all repos', done => {
     client.get('/repositorios/periodo/2016-01-01/2016-12-13/planilha')
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(200)
-  	  	expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  	  	done(err)
-  	  })
+      .end( (err, res) => {
+        expect(res.status).to.equal(200)
+        expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        done(err)
+      })
   })
 
   it('Get sheet by date from pk', done => {
-  	client.get('/repositorios/1/periodo/2016-01-01/2016-12-16/planilha')
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(200)
-  	  	expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  	  	done(err)
-  	  })
+    client.get('/repositorios/1/periodo/2016-01-01/2016-12-16/planilha')
+      .end( (err, res) => {
+        expect(res.status).to.equal(200)
+        expect(res.headers['content-type']).to.equal('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        done(err)
+      })
   })
 
   after(done => {
@@ -263,20 +263,20 @@ describe('Error, Sheet!', () => {
 
   it('Error on get sheet by date from all repos', done => {
     client.get('/repositorios/periodo/2016-01-01/2016-12-13/planilha')
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(404)
-  	  	expect(res.body.msg).to.equal('Repo location does not exist')
-  	  	done(err)
-  	  })
+      .end( (err, res) => {
+        expect(res.status).to.equal(404)
+        expect(res.body.msg).to.equal('Repo location does not exist')
+        done(err)
+      })
   })
 
   it('Error on Get sheet by date from pk', done => {
     client.get('/repositorios/2/periodo/2016-01-01/2016-12-13/planilha')
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(404)
-  	  	expect(res.body.msg).to.equal('Repo location does not exist')
-  	  	done(err)
-  	  })
+      .end( (err, res) => {
+        expect(res.status).to.equal(404)
+        expect(res.body.msg).to.equal('Repo location does not exist')
+        done(err)
+      })
   })
 
   after(done => {
@@ -308,11 +308,11 @@ describe('Delete repo', () => {
   it('Delete repo from pk', done => {
     client.del('/repositorios')
       .send( { pk: 1 })
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(202)
+      .end( (err, res) => {
+        expect(res.status).to.equal(202)
         expect(res.body.msg).to.equal('Accepted')
-  	  	done(err)
-  	  })
+        done(err)
+      })
   })
 
   it('204 on delete invalid repo from pk ', done => {
@@ -320,10 +320,10 @@ describe('Delete repo', () => {
       .send({
         pk: 3
       })
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(204)
-  	  	done(err)
-  	  })
+      .end( (err, res) => {
+        expect(res.status).to.equal(204)
+        done(err)
+      })
   })
 
 
@@ -360,20 +360,20 @@ describe('Update repo', () => {
             , nome: 'relatorio-git'
             , endereco: dirname
             })
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(200)
+      .end( (err, res) => {
+        expect(res.status).to.equal(200)
         expect(res.body.msg).to.equal('OK')
-  	  	done(err)
-  	  })
+        done(err)
+      })
   })
 
 
   it('204 on update invalid repo from pk ', done => {
     client.put('/repositorios')
-  	  .end( (err, res) => {
-  	  	expect(res.status).to.equal(404)
-  	  	done(err)
-  	  })
+      .end( (err, res) => {
+        expect(res.status).to.equal(404)
+        done(err)
+      })
   })
 
 

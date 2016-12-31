@@ -8,11 +8,11 @@ var banco = {
 };
 
 function conectar() {
-    var connection = mysql.createConnection(banco);
-    return connection;
+  var connection = mysql.createConnection(banco);
+  return connection;
 }
 
 
 module.exports = {
-    conectar
+  conectar
 }
